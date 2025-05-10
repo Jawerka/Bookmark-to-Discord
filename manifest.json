@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Bookmark to Discord",
+  "name": "Note to Discord",
   "version": "1.3",
-  "description": "Отправляет ссылки в Discord-webhook",
+  "description": "Отправляет заметки на Discord-webhook",
   "permissions": [
     "activeTab",
     "storage",
