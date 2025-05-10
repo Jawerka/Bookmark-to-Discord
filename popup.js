@@ -1,56 +1,63 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Загрузка webhook из хранилища
-  chrome.storage.local.get(["webhookUrl"], result => {
+  const sendButton = document.getElementById('send');
+  const toggleSettingsButton = document.getElementById('toggle-settings');
+  const settingsDiv = document.getElementById('settings');
+  const webhookInput = document.getElementById('webhook-url');
+  const saveWebhookButton = document.getElementById('save-webhook');
+  const noteTextarea = document.getElementById('note');
+
+    // Ctrl+Enter для отправки
+  noteTextarea.addEventListener('keydown', (event) => {
+    if (event.ctrlKey && event.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+
+  // Загрузка сохранённого webhook при запуске
+  chrome.storage.local.get(['webhookUrl'], (result) => {
     if (result.webhookUrl) {
-      document.getElementById("webhook").value = result.webhookUrl;
+      webhookInput.value = result.webhookUrl;
     }
   });
 
-  // Сохраняем webhook
-  document.getElementById("save").addEventListener("click", async () => {
-    const url = document.getElementById("webhook").value.trim();
-    if (!url) {
-      alert("Введите webhook URL");
-      return;
-    }
-    if (!url.startsWith("https://discord.com/api/webhooks/")) {
-      alert("Некорректный webhook URL. Должен начинаться с https://discord.com/api/webhooks/");
-      return;
-    }
-    
-    try {
-      await chrome.storage.local.set({ webhookUrl: url });
-      alert("Webhook сохранён!");
-    } catch (err) {
-      console.error("Ошибка сохранения:", err);
-      alert("Ошибка при сохранении webhook");
+  // Сохранение webhook
+  saveWebhookButton.addEventListener('click', () => {
+    const url = webhookInput.value.trim();
+    if (url) {
+      chrome.storage.local.set({ webhookUrl: url }, () => {
+        alert('Webhook сохранён.');
+      });
     }
   });
 
-  // Отправка текущей страницы с заметкой
-  document.getElementById("send").addEventListener("click", async () => {
-    try {
-      const { webhookUrl } = await chrome.storage.local.get(["webhookUrl"]);
-      if (!webhookUrl) {
-        alert("Сначала укажите webhook и сохраните его");
+  // Отправка заметки
+  sendButton.addEventListener('click', () => {
+    const note = noteTextarea.value.trim();
+    if (!note) return;
+
+    chrome.storage.local.get(['webhookUrl'], (result) => {
+      if (!result.webhookUrl) {
+        alert('Сначала настройте Webhook.');
         return;
       }
 
-      const note = document.getElementById("note").value.trim();
-      
-      chrome.runtime.sendMessage({ 
-        action: "sendCurrentPage",
-        note: note 
-      }, (response) => {
-        if (response?.success) {
-          document.getElementById("note").value = ""; // Очищаем поле заметки
-        } else {
-          alert(`Ошибка при отправке: ${response?.error || "Неизвестная ошибка"}`);
-        }
+      fetch(result.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: note
+        })
+      }).then(() => {
+        noteTextarea.value = '';
+      }).catch(err => {
+        console.error('Ошибка при отправке:', err);
+        alert('Ошибка при отправке.');
       });
-    } catch (err) {
-      console.error("Ошибка отправки:", err);
-      alert(`Ошибка при отправке: ${err.message}`);
-    }
+    });
+  });
+
+  // Переключение настроек
+  toggleSettingsButton.addEventListener('click', () => {
+    settingsDiv.style.display = settingsDiv.style.display === 'none' ? 'block' : 'none';
   });
 });

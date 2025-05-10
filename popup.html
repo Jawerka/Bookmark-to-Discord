@@ -2,43 +2,80 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>Note to Discord</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; width: 300px; }
-    input[type="text"], textarea { 
-      width: 100%; 
-      padding: 5px; 
-      margin-bottom: 10px; 
+    body {
+      background-color: rgba(30, 30, 30, 0.95); /* полупрозрачность 95% */
+      color: #e0e0e0;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 15px;
+      width: 300px;
+      border-radius: 12px;
       box-sizing: border-box;
     }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background-color: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #444;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 6px;
+      box-sizing: border-box;
+    }
+
     textarea {
-      height: 80px;
+      height: 100px;
       resize: vertical;
     }
-    button { 
-      width: 100%; 
-      padding: 8px; 
-      margin-top: 5px; 
+
+    button {
+      width: 100%;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
       cursor: pointer;
+      font-weight: bold;
     }
-    .section {
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+
+    button:hover {
+      background-color: #555;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      user-select: none;
+      outline: none;
+    }
+
+    details {
+      margin-top: 10px;
+    }
+
+    label {
+      font-size: 0.85em;
+      margin-top: 10px;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div class="section">
-    <label for="webhook">Webhook URL:</label>
-    <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/...">
-    <button id="save">Сохранить Webhook</button>
-  </div>
+  <textarea id="note" placeholder="Введите заметку...&#10;(Ctrl+Enter для отправки)"></textarea>
+  <button id="send">Отправить</button>
 
-  <div class="section">
-    <label for="note">Заметка (необязательно):</label>
-    <textarea id="note" placeholder="Добавьте комментарий к ссылке..."></textarea>
-    <button id="send">Отправить текущую страницу</button>
-  </div>
+  <details id="settings">
+    <summary>Настройка</summary>
+    <label for="webhook-url">Webhook URL:</label>
+    <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+    <button id="save-webhook">Сохранить</button>
+  </details>
 
   <script src="popup.js"></script>
 </body>
