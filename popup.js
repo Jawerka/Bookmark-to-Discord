@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveWebhookButton = document.getElementById('save-webhook');
   const noteTextarea = document.getElementById('note');
 
+  noteTextarea.focus();
+
     // Ctrl+Enter для отправки
   noteTextarea.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 'Enter') {
