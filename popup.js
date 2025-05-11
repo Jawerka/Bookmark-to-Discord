@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       }).then(() => {
         noteTextarea.value = '';
+        window.close();
       }).catch(err => {
         console.error('Ошибка при отправке:', err);
         alert('Ошибка при отправке.');

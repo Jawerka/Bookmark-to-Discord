@@ -10,7 +10,7 @@ chrome.runtime.onInstalled.addListener(() => {
   }
 });
 
-async function sendToDiscord(url, title, faviconUrl, note = "") {
+async function sendToDiscord(url) {
   try {
     const { webhookUrl } = await chrome.storage.local.get(["webhookUrl"]);
     if (!webhookUrl) {
@@ -24,16 +24,7 @@ async function sendToDiscord(url, title, faviconUrl, note = "") {
     }
 
     const payload = {
-      embeds: [
-        {
-          title: title.substring(0, 256),
-          url: url,
-          description: note ? note.substring(0, 2000) : undefined,
-          thumbnail: faviconUrl ? { url: faviconUrl } : undefined,
-          color: 0x3498db,
-          timestamp: new Date().toISOString()
-        }
-      ]
+      content: url.substring(0, 2000)
     };
 
     const response = await fetch(webhookUrl, {
@@ -59,21 +50,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       if (tabs[0]?.url) {
         try {
-          const tab = tabs[0];
-          let faviconUrl;
-          try {
-            const domain = new URL(tab.url).origin;
-            faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-          } catch (e) {
-            console.log("Не удалось получить favicon", e);
-          }
-
-          const success = await sendToDiscord(
-            tab.url, 
-            tab.title || "Страница", 
-            faviconUrl,
-            request.note
-          );
+          const success = await sendToDiscord(tabs[0].url);
           sendResponse({ success });
         } catch (err) {
           sendResponse({ success: false, error: err.message });
@@ -88,29 +65,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   let urlToSend;
-  let title;
-  let faviconUrl;
 
   try {
     if (info.linkUrl) {
       urlToSend = info.linkUrl;
-      title = info.linkText || "Ссылка";
     } else if (info.srcUrl) {
       urlToSend = info.srcUrl;
-      title = "Медиа";
     } else {
       urlToSend = tab.url;
-      title = tab.title || "Страница";
     }
 
-    try {
-      const domain = new URL(urlToSend).origin;
-      faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    } catch (e) {
-      console.log("Не удалось получить favicon", e);
-    }
-
-    await sendToDiscord(urlToSend, title, faviconUrl);
+    await sendToDiscord(urlToSend);
   } catch (err) {
     console.error("Ошибка при отправке:", err);
     chrome.notifications.create({
